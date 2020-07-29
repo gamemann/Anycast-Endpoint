@@ -1,0 +1,52 @@
+#!/bin/bash
+
+{{ $containerLen := len . }}
+{{ if gt $containerLen 0 }}
+{{ range $key, $value := . }}
+id="{{ .ID }}"
+
+{{ if .Env.ANYCAST_ADDR }}
+serverUpdating="0"
+{{ if .Env.SERVERUPDATE }}
+{{ if or (eq .Env.SERVERUPDATE "1") (eq .Env.SERVERUPDATE "2") }}
+serverUpdating="1"
+{{ end }}
+{{ end }}
+
+{{ $addrLen := len .Env.ANYCAST_ADDR }}
+{{ if gt $addrLen 0 }}
+
+# Check if the server is updating.
+if [ "$serverUpdating" -eq "0" ]; then
+        pid=`docker inspect $id | jq '.[0].State.Pid'`
+        mkdir -p /var/run/netns
+        rm -f /var/run/netns/$id
+        ln -s /proc/$pid/ns/net /var/run/netns/$id
+
+        remoteIp="{{ .Env.ANYCAST_ADDR }}"
+        internalIp="{{ .Env.INTERNAL_IP }}"
+        tunnelName="tf-${id:0:10}"
+        ip tunnel del $tunnelName
+        ip tunnel add $tunnelName mode ipip remote $remoteIp
+        ip link set $tunnelName promisc on
+        ip link set $tunnelName netns $id
+        ip netns exec $id ip link set $tunnelName up
+        ip netns exec $id ip addr add $internalIp/32 dev $tunnelName
+        ip netns exec $id ip route del default
+        ip netns exec $id ip route add default dev $tunnelName
+fi
+{{ end }}
+{{ end }}
+{{ end }}
+
+{{ else }}
+
+ip netns | while read line; do
+        docker inspect $line
+        if [ $? -ne 0 ]; then
+                tunnelName="tf-${line:0:10}"
+                ip netns del $line
+                ip tunnel del $tunnelName
+        fi
+done
+{{ end }}
