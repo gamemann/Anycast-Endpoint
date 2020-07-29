@@ -1,5 +1,5 @@
 #!/bin/bash
-sleep 3
+sleep 7
 
 # Set Ulimit
 ulimit -c unlimited
