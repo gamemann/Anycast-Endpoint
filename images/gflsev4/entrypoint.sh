@@ -18,10 +18,10 @@ echo "Changing working directory to ${workingDir}"
 cd $workingDir
 
 # Update or validate server.
-if [ "$SERVERUPDATE" = "1" ]; then
-        ./steamcmd/steamcmd.sh +login anonymous +force_install_dir /home/container +app_update ${CSRCDS_APPID} +quit
-elif [ "$SERVERUPDATE" = "2" ]; then
+if [ "$SERVERUPDATE" = "2" ]; then
         ./steamcmd/steamcmd.sh +login anonymous +force_install_dir /home/container +app_update ${CSRCDS_APPID} validate +quit
+elif [ "$SERVERUPDATE" = "1" ]; then
+        ./steamcmd/steamcmd.sh +login anonymous +force_install_dir /home/container +app_update ${CSRCDS_APPID} +quit
 fi
 
 # Replace Startup Variables
