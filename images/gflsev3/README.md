@@ -15,3 +15,10 @@ You may build this image executing the following command as root (or using `sudo
 ```
 docker build -t gflsev3:latest .
 ```
+
+## Available On Docker Hub
+This image is available on Docker Hub. You may download it with:
+
+```
+docker pull gamemann/gflsev3
+```
