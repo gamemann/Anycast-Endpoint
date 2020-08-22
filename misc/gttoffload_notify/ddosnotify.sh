@@ -24,8 +24,6 @@ while [ "$i" -ne 0 ]; do
             # Get timestamp.
             ts=$(echo "$REPLY" | grep -P -o "[0-9]{2}:[0-9]{2}")
 
-            echo "$ip => $ts"
-
             # Check if timestamp is a part of $timestamps array.
             if [[ ! " ${timestamps[@]} " =~ " $ip-$ts " ]]; then
                 # Logging.
