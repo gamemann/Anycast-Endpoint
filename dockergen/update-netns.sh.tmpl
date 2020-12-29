@@ -35,7 +35,7 @@ if [ "$serverUpdating" -eq "0" ]; then
                 cmds=$(ip tunnel add $tunnelName mode ipip remote $remoteIp) && $(ip link set $tunnelName promisc on) && $(ip link set $tunnelName netns $id) && $(ip netns exec $id ip link set $tunnelName up) && $(ip netns exec $id ip addr add $internalIp/32 dev $tunnelName)
                 result=$?
 
-                if [ $result -eq 0]; then
+                if [ $result -eq 0 ]; then
                         val=1
                 fi
                 
