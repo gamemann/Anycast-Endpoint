@@ -26,12 +26,22 @@ if [ "$serverUpdating" -eq "0" ]; then
         remoteIp="{{ .Env.ANYCAST_ADDR }}"
         internalIp="{{ .Env.INTERNAL_IP }}"
         tunnelName="tf-${id:0:10}"
-        ip tunnel del $tunnelName
-        ip tunnel add $tunnelName mode ipip remote $remoteIp
-        ip link set $tunnelName promisc on
-        ip link set $tunnelName netns $id
-        ip netns exec $id ip link set $tunnelName up
-        ip netns exec $id ip addr add $internalIp/32 dev $tunnelName
+
+        # Attempt to create the IPIP tunnel every second until it is created.
+        val=0
+
+        while [[ "$val" == 0 ]]; do
+                ip tunnel del $tunnelName
+                cmds=$(ip tunnel add $tunnelName mode ipip remote $remoteIp) && $(ip link set $tunnelName promisc on) && $(ip link set $tunnelName netns $id) && $(ip netns exec $id ip link set $tunnelName up) && $(ip netns exec $id ip addr add $internalIp/32 dev $tunnelName)
+                result=$?
+
+                if [ $result -eq 0]; then
+                        val=1
+                fi
+                
+                sleep 1
+        done
+
         ip netns exec $id ip route del default
         ip netns exec $id ip route add default dev $tunnelName
 fi
