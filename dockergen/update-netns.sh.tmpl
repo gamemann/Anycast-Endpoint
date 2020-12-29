@@ -29,15 +29,26 @@ if [ "$serverUpdating" -eq "0" ]; then
 
         # Attempt to create the IPIP tunnel every second until it is created.
         val=0
+        try=0
 
         while [[ "$val" == 0 ]]; do
                 ip tunnel del $tunnelName
-                cmds=$(ip tunnel add $tunnelName mode ipip remote $remoteIp) && $(ip link set $tunnelName promisc on) && $(ip link set $tunnelName netns $id) && $(ip netns exec $id ip link set $tunnelName up) && $(ip netns exec $id ip addr add $internalIp/32 dev $tunnelName)
+                ip tunnel add $tunnelName mode ipip remote $remoteIp
+                ip link set $tunnelName promisc on
+                ip link set $tunnelName netns $id
+                ip netns exec $id ip link set $tunnelName up
+                ip netns exec $id ip addr add $internalIp/32 dev $tunnelName
                 result=$?
 
                 if [ $result -eq 0 ]; then
                         val=1
                 fi
+
+                if [[ "$try" > 5 ]]; then
+                        val=1
+                fi
+
+                try=try+1
                 
                 sleep 1
         done
